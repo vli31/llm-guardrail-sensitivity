@@ -5,7 +5,7 @@ from helpers import generate_response
 from pipeline import Executor, Evaluator 
 
 NUM_TIMES = 2
-REP_PATH = "REP_PERSONAS_PATH" # representative personas to test candidates on
+REP_PATH = "REP_PERSONAS_PATH.csv" # representative personas to test candidates on
 
 def get_rep_personas(personas_path: str): 
     random.seed(80) # for reproducibility 

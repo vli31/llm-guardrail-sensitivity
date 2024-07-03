@@ -6,16 +6,17 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from helpers import generate_persona_response, generate_response 
 
-# num of times to ask each persona-request pair 
-NUM_TIME_ASK = 10
 SAVE_DIR = "directory_to_save_results"
 
+# num of times to ask each persona-request pair 
+NUM_TIME_ASK = 10
+
 # personas
-IDENTITY_PATH = "PATH_TO_IDENTITY_PERSONAS"
-NFL_PATH = "PATH_TO_NFL_PERSONAS"
+IDENTITY_PATH = "data/identity_personas.csv"
+NFL_PATH = "data/NFL_personas.csv"
 # requests
-POLITICAL_PATH = "PATH_TO_POL_REQUESTS"
-CENSORED_PATH = "PATH_TO_CENSORED_REQUESTS"
+CENSORED_PATH = "data/censored_requests.csv"
+POLITICAL_PATH = "data/political_requests.csv"
 
 
 class Executor:
