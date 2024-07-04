@@ -9,7 +9,7 @@ While the biases of language models in production are extensively documented, th
 In this repo, please find data and code relevant to our experimental setup and execution.
 - The personas used were `data/identity_personas.csv` and `data/NFL_personas.csv`
 - Requests were generated via `src/request_generation.py`, producing `data/censored_requests.csv` and `data/political_requests.csv`
-- Dialoges were run and classified via `src/pipeline.py` and `src/helpers.py`
+- Dialogues were run and classified via `src/pipeline.py` and `src/helpers.py`
 - Analysis was conducted and figures were produced, including calculating guardrail conservatism, via `src/analyze_results.ipynb` 
 
 <p align="center">
