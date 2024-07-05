@@ -1,24 +1,72 @@
 import time
 import openai
 from tqdm.auto import tqdm
+import torch
+import torch.nn.functional as F
 
 openai.api_key = "FILL-IN-KEY"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-def get_embeddings(texts, engine="text-embedding-ada-002"):
+def get_embeddings(texts, engine="text-embedding-ada-002", model=None, tokenizer=None, batch_size=20):
     """
     Get embeddings for a list of texts using OpenAI's specified engine.
 
     Args:
     - texts (list of str): The texts to embed.
-    - engine (str, optional): The embedding model to use. Default is "text-similarity-babbage-001".
+    - engine (str, optional): The embedding model to use. Default is "text-embedding-ada-002".
+    - model (torch.nn huggingface model, optional): The open source embedding model to use. Default is None
+    - tokenizer (huggingface tokenizer, optional): The associated tokenizer for the open source embedding model. Default is None
+    - batch_size (int, optional): Batch size. Default is 20
 
     Returns:
-    - list of embeddings: A list of embedding vectors.
+    - list of embeddings: A list of embedding vectors for the input texts.
     """
+    assert engine or model, "Please specify what embedding model you want to use. For OpenAI model, set `openai` to `True` and provide a valid engine name. \
+    For open source model, please pass the model into `embed_model`"
     embeddings = []
-    for text in tqdm(texts):
-        response = openai.Embedding.create(input=text, engine=engine) # type: ignore
-        embeddings.append(response["data"][0]["embedding"])
+    if engine is not None:
+        i = 0
+        batch = []
+        for response in tqdm(texts):
+            batch.append(response)
+            if i < batch_size:
+                i += 1
+            else:
+                response = openai.Embedding.create(input=batch, engine=engine) # type: ignore
+                embeddings.append(response["data"][0]["embedding"])
+                i = 0
+                batch = []
+        if i > 0:
+            response = openai.Embedding.create(input=batch, engine=engine) # type: ignore
+            embeddings.append(response["data"][0]["embedding"])
+    else:
+        i = 0
+        batch = []
+        for response in tqdm(texts):
+            batch.append(response)
+            if i < batch_size:
+                i += 1
+            else:
+                batch_dict = tokenizer(batch, max_length=8192, padding=True, truncation=True, return_tensors='pt').to(device)
+                with torch.no_grad():
+                    outputs = model(**batch_dict)
+                batch_embeddings = outputs.last_hidden_state[:, 0]
+
+                batch_embeddings = F.normalize(embeddings, p=2, dim=1)
+                batch_embeddings = batch_embeddings.cpu().detach().numpy()
+                embeddings.append(batch_embeddings)
+                i = 0
+                batch = []
+        if i > 0:
+            batch_dict = tokenizer(batch, max_length=8192, padding=True, truncation=True, return_tensors='pt').to(device)
+
+            with torch.no_grad():
+                outputs = model(**batch_dict)
+            batch_embeddings = outputs.last_hidden_state[:, 0]
+
+            batch_embeddings = F.normalize(embeddings, p=2, dim=1)
+            batch_embeddings = batch_embeddings.cpu().detach().numpy()
+            embeddings.append(embeddings)
     return embeddings
 
 
